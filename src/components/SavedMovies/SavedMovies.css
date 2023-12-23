@@ -1,0 +1,13 @@
+.saved-movies{
+   flex-grow: 1;
+   background-color: #202020;
+}
+
+.saved-movies__container{
+   max-width: 1170px;
+   width: 100%;
+   margin: 0 auto;
+   box-sizing: border-box;
+   padding-left: 15px;
+   padding-right: 15px;
+}
