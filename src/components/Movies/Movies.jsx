@@ -5,13 +5,13 @@ import SearchForm from "../SearchForm/SearchForm";
 
 function Movies() {
    return (
-      <section className="movies">
+      <main className="movies">
          <div className='movies__container'>
             <SearchForm />
             <MoviesCardList movies={initialMovies} />
             <button className='movies__btn'>Ещё</button>
          </div>
-      </section>
+      </main>
    )
 }
 

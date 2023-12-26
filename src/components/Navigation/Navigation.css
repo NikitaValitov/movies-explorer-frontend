@@ -6,7 +6,7 @@
 .navigation__link {
    text-decoration: none;
    color: #FFF;
-   font-family: Inter;
+   font-family: 'Inter', 'Arial', sans-serif;
    font-size: 14px;
    font-style: normal;
    font-weight: 400;
@@ -254,7 +254,7 @@
    text-decoration: none;
    color: #FFF;
    text-align: center;
-   font-family: Inter;
+   font-family: 'Inter', 'Arial', sans-serif;
    font-size: 18px;
    font-style: normal;
    font-weight: 500;
@@ -323,7 +323,7 @@
 .navigation__link_signup {
    color: #FFF;
    text-align: right;
-   font-family: Inter;
+   font-family: 'Inter', 'Arial', sans-serif;
    font-size: 12px;
    font-style: normal;
    font-weight: 500;
@@ -337,7 +337,7 @@
    border-radius: 3px;
    background: #3DDC84;
    color: #000;
-   font-family: Inter;
+   font-family: 'Inter', 'Arial', sans-serif;
    font-size: 12px;
    font-style: normal;
    font-weight: 500;

@@ -8,14 +8,14 @@ import Techs from "../Techs/Techs";
 
 function Main() {
    return (
-      <section className="main">
+      <main className="main">
          <Promo></Promo>
          <NavTab></NavTab>
          <AboutProject></AboutProject>
          <Techs></Techs>
          <AboutMe></AboutMe>
          <Portfolio></Portfolio>
-      </section>
+      </main>
    )
 }
 

@@ -13,7 +13,7 @@ import NotFound from '../NotFound/NotFound';
 
 function App() {
   const location = useLocation();
-  const [loggedIn, setLoggedIn] = useState(false);
+  const [loggedIn, setLoggedIn] = useState(true);
   return (
     <div className="app">
       {['/', '/movies', '/saved-movies', '/profile'].includes(location.pathname) && <Header loggedIn={loggedIn} />}
