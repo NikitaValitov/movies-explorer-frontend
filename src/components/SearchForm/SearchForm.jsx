@@ -1,24 +1,53 @@
 import FilterCheckbox from '../FilterCheckbox/FilterCheckbox';
 import './SearchForm.css'
+import { useState } from 'react';
 
-function SearchForm() {
+function SearchForm({
+   handleSearchSubmit,
+   setIsSearch,
+   value,
+   setValue,
+   shortMovies,
+   handleShort,
+}) {
+
+
+   function handleSubmit(e) {
+      e.preventDefault();
+      handleSearchSubmit();
+      setIsSearch(value);
+
+   };
+
+   function handleChangeInput(e) {
+      setValue(e.target.value)
+   };
+
    return (
       <section className="search">
          <div className='search__container'>
-            <form className='search__form'>
+            <form
+               className='search__form'
+               name="search"
+               onSubmit={handleSubmit}
+            >
                <input
                   type="text"
+                  name="search"
                   className='search__input'
                   placeholder="Фильм"
-                  required
+                  onChange={handleChangeInput}
+                  value={value}
+
                />
                <button
-                  className='search__btn'
+                  className={`${value ? 'search__btn' : 'search__btn_disabled'}`}
                   type="submit"
+                  disabled={!value}
                > Поиск
                </button>
             </form>
-            <FilterCheckbox></FilterCheckbox>
+            <FilterCheckbox handleShort={handleShort} shortMovies={shortMovies} />
          </div>
       </section>
    )
