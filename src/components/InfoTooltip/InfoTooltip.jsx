@@ -1,13 +1,13 @@
 import './InfoTooltip.css'
 function InfoTooltip({
-  infotooltip
+  text
 }) {
 
   return (
 
     <div className='infotooltip'>
       <div className="infotooltip__container ">
-        <p className="infotooltip__text">{infotooltip}</p>
+        <p className="infotooltip__text">{text}</p>
       </div>
     </div>
   );

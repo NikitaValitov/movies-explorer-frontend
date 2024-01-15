@@ -1,12 +1,12 @@
 import './FilterCheckbox.css'
 
-function FilterCheckbox({ handleShort, shortMovies }) {
+function FilterCheckbox({ handleShort, isShortMovies }) {
    return (
       <div className="checkbox">
          <input type="checkbox"
          className='checkbox__input'
          onChange={handleShort}
-         checked={shortMovies ? true : false}
+         checked={isShortMovies ? true : false}
          />
          <span className='checkbox__text'>Короткометражки</span>
       </div>

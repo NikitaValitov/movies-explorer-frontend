@@ -1,120 +1,150 @@
 import './Movies.css'
+import Preloader from '../Preloader/Preloader';
+import moviesApi from '../../utils/MoviesApi';
 import MoviesCardList from "../MoviesCardList/MoviesCardList";
 import SearchForm from "../SearchForm/SearchForm";
-import { useContext, useEffect, useState } from 'react';
-import moviesApi from '../../utils/MoviesApi';
-import Preloader from '../Preloader/Preloader';
-import InfoTooltip from '../InfoTooltip/InfoTooltip';
-import useLocalStorageState from '../../hooks/useLocalStorageState'
-// import CurrentUserContext from '../../contexts/CurrentUserContext'
+import { useEffect, useState } from 'react';
 
-function Movies() {
+function Movies({
+   onMovieLike,
+   onMovieDelete,
+   savedMovies
+}) {
 
-   // const currentUser = useContext(CurrentUserContext);
+   const [isLoading, setIsLoading] = useState(false); // прелоадер
 
-   const [shortMovies, setShortMovies] = useState(() => JSON.parse(localStorage.getItem('checkbox')) || false); // 1 состояние чекбокса
+   const [isShortMovies, setIsShortMovies] = useState(() => JSON.parse(localStorage.getItem('checkbox')) || false); // состояние чекбокса
 
-   // const [filteredMovies, setFilteredMovies] = useState([]); // отфильтрованные по чекбоксу и запросу фильмы
+   const [value, setValue] = useState(() => JSON.parse(localStorage.getItem('input-value')) || ''); // инпут
 
-   const [infotooltip, setInfotooltip] = useState('');
+   const [filteredMovies, setFilteredMovies] = useState(() => JSON.parse(localStorage.getItem('movies')) || []); // все фильмы
 
-   const [isLoading, setIsLoading] = useState(false);
-
-   const [movies, setMovies] = useState([]); // Все фильмы с API
+   const [isError, setIsError] = useState(false); // ошибка сервера
+   const [isNotFound, setIsNotFound] = useState(false); // ошибка фильмы не найдены
 
 
-
-   const [value, setValue] = useState(JSON.parse(localStorage.getItem('searching-string'))); // стейт инпута
-
-   const [isSearch, setIsSearch] = useState(JSON.parse(localStorage.getItem('searching-string'))); // 6 стейст после поиска
-
-
-   const unputLocal =
-      // чекбокс в localStorage
-      useEffect(() => {
-         localStorage.setItem('checkbox', JSON.stringify(shortMovies))
-      }, [shortMovies])
-
-   // инпут в localStorage
-   useEffect(() => {
-      localStorage.setItem('searching-string', JSON.stringify(isSearch))
-   }, [isSearch])
-
-
-   if (!value) {
-      localStorage.removeItem('movies')
-   }
-
-   //обнуление стейтов после удаления инпута
-   useEffect(() => {
-      if (value === '') {
-         setIsSearch('');
-         setMovies([])
-      }
-   }, [value])
-
-   function handleShort() {
-      setShortMovies(!shortMovies);
-      handleSearchSubmit()
-   }
-
-   // фильтрация инпута
-   const filterMovies = movies.filter(movie => {
-      if (shortMovies) {
-         return ((movie.nameRU.toLowerCase().includes(isSearch.toLowerCase()) ||
-            movie.nameEN.toLowerCase().includes(isSearch.toLowerCase())) &&
-            movie.duration <= 40)
-
-      } else {
-         return (movie.nameRU.toLowerCase().includes(isSearch.toLowerCase()) ||
-            movie.nameEN.toLowerCase().includes(isSearch.toLowerCase()))
-      }
-   });
-   // const [filteredMovies, setFilteredMovies] = useState([]); // отфильтрованные по чекбоксу и запросу фильмы
-
-   console.log(filterMovies.length)
-
-   function handleSearchSubmit() {
+   // поиск фильмов
+   function handleSubmit() {
       setIsLoading(true);
-      moviesApi.getMovies()
-         .then((movies) => {
-            setMovies(movies);
-
-         })
-         .catch((err) => {
-            console.log('Ошибка при поиске фильмов: ', err);
-            setInfotooltip('Во время запроса произошла ошибка. Возможно, проблема с соединением или сервер недоступен. Подождите немного и попробуйте ещё раз')
-         })
-         .finally(() => {
-            setIsLoading(false);
-         });
-
+      const allMovies = JSON.parse(localStorage.getItem('allMovies'));
+      if (allMovies === null) {
+         moviesApi
+            .getMovies()
+            .then((movies) => {
+               // setMovies(movies);
+               localStorage.setItem('allMovies', JSON.stringify(movies));
+               filter();
+               setIsError(false);
+            })
+            .catch((err) => {
+               console.log('Ошибка при поиске фильмов: ', err);
+               setIsError(true);
+            })
+            .finally(() => {
+               setIsLoading(false);
+            });
+      } else {
+         filter();
+         setIsLoading(false);
+      }
    }
 
-   const [notFound, setNotFound] = useState(false); // если по запросу ничего не найдено - скроем фильмы
-   // if (filterMovies.length === 0) {
-   //    setNotFound(true);
-   // }
+   // фильтрация фильмов
+   function filter() {
+      const allMovies = JSON.parse(localStorage.getItem('allMovies'));
+      const filteredMovies = allMovies.filter(movie => {
+         if (isShortMovies) {
+            return ((movie.nameRU.toLowerCase().includes(value.toLowerCase()) ||
+               movie.nameEN.toLowerCase().includes(value.toLowerCase())) &&
+               movie.duration <= 40)
 
-   const savedIsSearch = JSON.parse(localStorage.getItem("movies"));
+         } else {
+            return (movie.nameRU.toLowerCase().includes(value.toLowerCase()) ||
+               movie.nameEN.toLowerCase().includes(value.toLowerCase()))
+         }
+      })
+      if (value) {
+         setFilteredMovies(filteredMovies);
+      }
+      localStorage.setItem('input-value', JSON.stringify(value));
+      localStorage.setItem('checkbox', JSON.stringify(isShortMovies));
+      localStorage.setItem('movies', JSON.stringify(filteredMovies));
+   }
+
+   // фильтрация короткометражек
+   function filterShort() {
+      const allMovies = JSON.parse(localStorage.getItem('allMovies'));
+      const filteredMovies = allMovies.filter(movie => {
+         if (!isShortMovies) {
+            return ((movie.nameRU.toLowerCase().includes(value.toLowerCase()) ||
+               movie.nameEN.toLowerCase().includes(value.toLowerCase())) &&
+               movie.duration <= 40)
+
+         } else {
+            return (movie.nameRU.toLowerCase().includes(value.toLowerCase()) ||
+               movie.nameEN.toLowerCase().includes(value.toLowerCase()))
+         }
+      })
+      setFilteredMovies(filteredMovies);
+      localStorage.setItem('input-value', JSON.stringify(value));
+      localStorage.setItem('checkbox', JSON.stringify(!isShortMovies));
+      localStorage.setItem('movies', JSON.stringify(filteredMovies));
+   }
+
+   // переключение чекбокса
+   function handleShort() {
+      if (value) {
+         setIsShortMovies(!isShortMovies);
+         filterShort();
+      }
+      setIsShortMovies(!isShortMovies);
+   }
+
+   // удаление из LC при стираниии инпута
+   if (!value) {
+      localStorage.removeItem('input-value');
+      localStorage.removeItem('checkbox');
+      localStorage.removeItem('movies');
+   }
+
+   // проверка на ошибку наличия фильмов
+   useEffect(() => {
+      if (localStorage.getItem('movies')) {
+         if (filteredMovies.length === 0) {
+            setIsNotFound(true);
+         } else {
+            setIsNotFound(false);
+         }
+      } else {
+         setIsNotFound(false);
+      }
+   }, [filteredMovies]);
 
    return (
       <main className="movies">
          <div className='movies__container'>
             <SearchForm
-               handleSearchSubmit={handleSearchSubmit}
-               setIsSearch={setIsSearch}
                value={value}
                setValue={setValue}
+               handleSearchSubmit={handleSubmit}
                handleShort={handleShort}
-               shortMovies={shortMovies}
-            // handleShortFilms={handleShortFilms}
+               isShortMovies={isShortMovies}
+
             />
-            {isLoading ? <Preloader /> :
-               (isSearch ? (((savedIsSearch) && (savedIsSearch.length > 0) && (filterMovies.length === 0) && (filterMovies.length !== 0) ? <MoviesCardList moviesList={savedIsSearch} /> :
-                  (filterMovies.length > 0 ? <MoviesCardList moviesList={filterMovies} notFound={notFound} setNotFound={setNotFound}  /> : ''))) : '')
+            {isLoading
+               ?
+               <Preloader />
+               :
+               <MoviesCardList
+                  movies={filteredMovies}
+                  isSavedFilms={false}
+                  isError={isError}
+                  isNotFound={isNotFound}
+                  onMovieLike={onMovieLike}
+                  onMovieDelete={onMovieDelete}
+                  savedMovies={savedMovies}
+               />
             }
-            {(isSearch && filterMovies.length === 0 && movies.length !== 0 ? (<InfoTooltip infotooltip={infotooltip || 'Ничего не найдено'} />) : '')}
          </div>
       </main>
    )

@@ -20,15 +20,17 @@ function App() {
   const [isLoading, setIsLoading] = useState(false);
 
   const location = useLocation();
+  const navigate = useNavigate();
   const [loggedIn, setLoggedIn] = useState(false);
   const [currentUser, setCurrentUser] = useState({});
-  const navigate = useNavigate();
+  const [savedMovies, setSavedMovies] = useState([]); //сохраненные фильмы
+
+  //проверка токена 
 
   const checkToken = async (jwt) => {
     return auth.checkToken(jwt)
-      .then((res) => {
+      .then(() => {
         if (jwt) {
-          // setLoggedIn(true);
           mainApi.getUserInfo()
             .then(data => {
               setLoggedIn(true);
@@ -50,6 +52,8 @@ function App() {
     }
   }, []);
 
+  // регитрация
+
   const onRegister = ({ email, password, name }) => {
     setIsLoading(true);
     return auth.register(email, password, name)
@@ -61,6 +65,8 @@ function App() {
         setIsLoading(false);
       });
   };
+
+  // авторизация
 
   const onLogin = ({ email, password, name }) => {
     setIsLoading(true);
@@ -81,22 +87,50 @@ function App() {
       });
   }
 
+  // выход
+
   const logOut = () => {
-    localStorage.removeItem('jwt');
+    // localStorage.removeItem('jwt');
+    localStorage.clear();
     setLoggedIn(false);
     navigate('/');
   };
 
+  // получение инфо
+
+  // useEffect(() => {
+  //   Promise.all([mainApi.getUserInfo(), mainApi.getMovies()])
+  //     .then(([data, movies]) => {
+  //       setCurrentUser(data);
+  //       setSavedMovies(movies.reverse());
+  //     })
+  //     .catch((err) => {
+  //       console.log('Ошибка при получении данных юзера и фильмов: ', err);
+  //     })
+  // }, [])
+
   useEffect(() => {
-    if (loggedIn) {
+
       mainApi
         .getUserInfo()
         .then(res => setCurrentUser(res))
         .catch((err) => {
           console.log('Ошибка при получении данных юзера и карточек: ', err);
         })
-    }
-  }, [loggedIn]);
+      mainApi
+        .getMovies()
+        .then((cardsData) => {
+          setSavedMovies(cardsData.reverse());
+        })
+        .catch((err) => {
+          console.log('Ошибка при получении фильмов: ', err);
+        })
+    
+  }, []);
+
+
+
+  // изменение данных пользователя
 
   const updateUser = ({ name, email }) => {
     setIsLoading(true);
@@ -107,6 +141,35 @@ function App() {
       })
       .finally(() => {
         setIsLoading(false);
+      });
+  }
+
+  // постановка лайка
+
+  function handleMovieLike(movie) {
+    mainApi
+      .saveMovie(movie)
+      .then((newMovie) => {
+        setSavedMovies([newMovie, ...savedMovies]);
+      })
+      .catch((err) => {
+        console.log('Ошибка при добавлении фильма в сохраненные: ', err);
+      });
+  }
+
+  // удаление лайка
+
+  function handleMovieDelete(movie) {
+    const movieId = movie._id || savedMovies.find((i) => i.movieId === movie.movieId)._id;
+    mainApi
+      .deleteMovie(movieId)
+      .then(() => {
+        setSavedMovies((prevSavedMovies) =>
+          prevSavedMovies.filter((savedMovie) => savedMovie._id !== movieId)
+        )
+      })
+      .catch((err) => {
+        console.log('Ошибка при удалении фильма из сохраненных: ', err);
       });
   }
 
@@ -146,8 +209,9 @@ function App() {
               element={<ProtectedRoute
                 element={Movies}
                 loggedIn={loggedIn}
-              // movies={movies}
-              // getAllMovies={getAllMovies}
+                onMovieLike={handleMovieLike}
+                onMovieDelete={handleMovieDelete}
+                savedMovies={savedMovies}
               />}
             />
             <Route
@@ -155,6 +219,8 @@ function App() {
               element={<ProtectedRoute
                 element={SavedMovies}
                 loggedIn={loggedIn}
+                onMovieDelete={handleMovieDelete}
+                savedMovies={savedMovies}
               />}
             />
             <Route
