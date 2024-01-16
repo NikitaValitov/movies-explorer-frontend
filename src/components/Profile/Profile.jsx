@@ -36,7 +36,7 @@ function Profile({ logOut, updateUser }) {
    return (
       <main className="profile">
          <div className='profile__container'>
-            <h2 className='profile__title'>{`Привет, ${currentUser.name || ''}!`}</h2>
+            <h2 className='profile__title'>{`Привет, ${currentUser.name}!`}</h2>
 
             {isUpdate ? (
                <form className='profile__form' onSubmit={handleSubmit}>
@@ -48,7 +48,7 @@ function Profile({ logOut, updateUser }) {
                            onChange={handleChange}
                            name='name'
                            placeholder='Имя'
-                           value={values.name || ''}
+                           value={values.name}
                            required
                            minLength="2"
                            pattern={'^[а-яА-Яa-zA-Z0-9]+$'}
@@ -63,7 +63,7 @@ function Profile({ logOut, updateUser }) {
                            onChange={handleChange}
                            name='email'
                            placeholder='E-mail'
-                           value={values.email || ''}
+                           value={values.email}
                            required
                         />
                         <span className='profile__error-email'>{errors.email || ''}</span>

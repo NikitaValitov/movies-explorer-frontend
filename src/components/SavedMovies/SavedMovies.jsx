@@ -25,6 +25,26 @@ function SavedMovies({
          setFilteredMovies(savedMovies)
       }
    })
+
+   useEffect(() => {
+      const filtereddMovies = savedMovies.filter(movie => {
+         if (isShortMovies) {
+            return ((movie.nameRU.toLowerCase().includes(value.toLowerCase()) ||
+               movie.nameEN.toLowerCase().includes(value.toLowerCase())) &&
+               movie.duration <= 40)
+
+         } else {
+            return (movie.nameRU.toLowerCase().includes(value.toLowerCase()) ||
+               movie.nameEN.toLowerCase().includes(value.toLowerCase()))
+         }
+      })
+      if (filtereddMovies.length === 0) {
+         setFilteredMovies(filtereddMovies);
+         setIsNotFound(true);
+      }
+
+   })
+
    function handleSubmit() {
       const filtereddMovies = savedMovies.filter(movie => {
          if (isShortMovies) {
@@ -57,14 +77,14 @@ function SavedMovies({
       setFilteredMovies(filteredShortMovies);
    }
 
-      // проверка на ошибку наличия фильмов
-      useEffect(() => {
-            if (filteredMovies.length === 0) {
-               setIsNotFound(true);
-         } else {
-            setIsNotFound(false);
-         }
-      }, [filteredMovies]);
+   // проверка на ошибку наличия фильмов
+   useEffect(() => {
+      if (filteredMovies.length === 0) {
+         setIsNotFound(true);
+      } else {
+         setIsNotFound(false);
+      }
+   }, [filteredMovies]);
 
    return (
       <main className="saved-movies">

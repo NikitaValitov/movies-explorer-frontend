@@ -2,10 +2,10 @@ export const BASE_URL = 'https://api.diploma-nik.nomoredomainsmonster.ru';
 
 const checkError = (res) => {
    if (res.ok) {
-     return res.json();
-   }
-   return Promise.reject(`Статус ошибки: ${res.status}`);
- }
+      return res.json();
+    }
+    return Promise.reject(res.status);
+  }
 
 export const register = (email, password, name) => {
    return fetch(`${BASE_URL}/signup`, {

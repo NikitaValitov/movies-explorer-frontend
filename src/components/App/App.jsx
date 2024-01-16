@@ -1,5 +1,5 @@
 import './App.css';
-import { Route, Routes, useLocation, useNavigate } from 'react-router-dom';
+import { Route, Routes, useLocation, useNavigate, Redirect } from 'react-router-dom';
 import Header from '../Header/Header';
 import Footer from '../Footer/Footer';
 import Preloader from '../Preloader/Preloader';
@@ -11,6 +11,7 @@ import { useEffect, useState } from 'react';
 import Register from '../Register/Register';
 import Login from '../Login/Login';
 import NotFound from '../NotFound/NotFound';
+import PopupSuccess from '../PopupSuccess/PopupSuccess';
 import ProtectedRoute from '../ProtectedRoute/ProtectedRoute';
 import * as auth from '../../utils/auth.js';
 import CurrentUserContext from '../../contexts/CurrentUserContext.js';
@@ -24,6 +25,13 @@ function App() {
   const [loggedIn, setLoggedIn] = useState(false);
   const [currentUser, setCurrentUser] = useState({});
   const [savedMovies, setSavedMovies] = useState([]); //сохраненные фильмы
+
+  const [isInfoTooltipOpen, setIsInfoTooltipOpen] = useState(false);
+  const [infoTooltipMessage, setInfoTooltipMessage] = useState({
+    status: "",
+    text: "",
+  });
+
 
   //проверка токена 
 
@@ -40,7 +48,7 @@ function App() {
         }
       })
       .catch((err) => {
-        console.error('Что-то пошло не так', err);
+        console.err('Что-то пошло не так, ошибка: ', err);
       });
   }
 
@@ -57,8 +65,18 @@ function App() {
   const onRegister = ({ email, password, name }) => {
     setIsLoading(true);
     return auth.register(email, password, name)
-      .then(() => onLogin({ email, password }))
+      .then(() => {
+        onLogin({ email, password })
+        setCurrentUser({ email, password });
+      })
       .catch((err) => {
+        if (err === 409) {
+          setIsInfoTooltipOpen(true);
+          setInfoTooltipMessage({
+            status: false,
+            text: "Пользователь с таким email уже существует",
+          });
+        }
         console.log(err);
       })
       .finally(() => {
@@ -76,11 +94,12 @@ function App() {
         if (res.token) {
           setLoggedIn(true);
           localStorage.setItem('jwt', res.token);
-          navigate('/movies', { replace: true });
+          navigate('/movies', { replace: true });;
+          setCurrentUser(res);
         }
       })
       .catch((err) => {
-        console.error('Что-то пошло не так', err);
+        console.log('Что-то пошло не так, ошибка: ', err);
       })
       .finally(() => {
         setIsLoading(false);
@@ -98,25 +117,19 @@ function App() {
 
   // получение инфо
 
-  // useEffect(() => {
-  //   Promise.all([mainApi.getUserInfo(), mainApi.getMovies()])
-  //     .then(([data, movies]) => {
-  //       setCurrentUser(data);
-  //       setSavedMovies(movies.reverse());
-  //     })
-  //     .catch((err) => {
-  //       console.log('Ошибка при получении данных юзера и фильмов: ', err);
-  //     })
-  // }, [])
-
   useEffect(() => {
-
+    if (loggedIn) {
       mainApi
         .getUserInfo()
         .then(res => setCurrentUser(res))
         .catch((err) => {
           console.log('Ошибка при получении данных юзера и карточек: ', err);
         })
+    }
+  }, [loggedIn]);
+
+  useEffect(() => {
+    if (loggedIn && currentUser) {
       mainApi
         .getMovies()
         .then((cardsData) => {
@@ -125,10 +138,8 @@ function App() {
         .catch((err) => {
           console.log('Ошибка при получении фильмов: ', err);
         })
-    
-  }, []);
-
-
+    }
+  }, [currentUser, loggedIn]);
 
   // изменение данных пользователя
 
@@ -138,10 +149,36 @@ function App() {
       .editUserInfo(name, email)
       .then(() => {
         setCurrentUser((previousData) => ({ ...previousData, name, email }));
+        setIsInfoTooltipOpen(true);
+        setInfoTooltipMessage({
+          status: true,
+          text: "Информация успешно изменена!",
+        })
       })
+      .catch((err) => {
+        if (err === 409) {
+          setIsInfoTooltipOpen(true);
+          setInfoTooltipMessage({
+            status: false,
+            text: "Пользователь с таким email уже существует",
+          });
+        } else {
+          setIsInfoTooltipOpen(true);
+          setInfoTooltipMessage({
+            status: false,
+            text: "Что-то пошло не так, ошибка: ! Попробуйте ещё раз.",
+          });
+        }
+        console.log(err);
+      })
+
       .finally(() => {
         setIsLoading(false);
       });
+  }
+
+  function closePopup() {
+    setIsInfoTooltipOpen(false);
   }
 
   // постановка лайка
@@ -188,22 +225,24 @@ function App() {
             />
             <Route
               path='/signup'
-              element={<Register
+              element={<ProtectedRoute
+                element={Register}
+                loggedIn={!loggedIn}
                 onRegister={onRegister}
               />}
-
             />
             <Route
               path='/signin'
-              element={<Login
-                onLogin={onLogin} />}
-
+              element={<ProtectedRoute
+                element={Login}
+                loggedIn={!loggedIn}
+                onLogin={onLogin}
+              />}
             />
             <Route
               path='/'
               element={<Main />}
             />
-
             <Route
               path='/movies'
               element={<ProtectedRoute
@@ -233,6 +272,11 @@ function App() {
               />}
             />
           </Routes>
+          <PopupSuccess
+            message={infoTooltipMessage}
+            isOpen={isInfoTooltipOpen}
+            onClose={closePopup}
+          />
           {['/', '/movies', '/saved-movies'].includes(location.pathname) && <Footer />}
         </CurrentUserContext.Provider>)}
     </div>

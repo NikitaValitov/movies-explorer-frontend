@@ -5,8 +5,11 @@ class MainApi {
    }
 
    #onResponce(res) {
-      return res.ok ? res.json() : res.json().then(errData => Promise.reject(errData));
-   }
+      if (res.ok) {
+        return res.json();
+      }
+      return Promise.reject(res.status);
+    }
 
    getUserInfo() {
       const token = localStorage.getItem('jwt');

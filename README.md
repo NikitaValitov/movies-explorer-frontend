@@ -7,4 +7,4 @@
 
 ## Ссылка на Pull request: https://github.com/NikitaValitov/movies-explorer-frontend/pull/2
 
-## Ссылка на  сайт: https://diploma-nik.nomoredomainsmonster.ru/profile
+## Ссылка на  сайт: https://diploma-nik.nomoredomainsmonster.ru

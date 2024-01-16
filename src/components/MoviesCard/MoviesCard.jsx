@@ -11,8 +11,6 @@ function MoviesCard({
    onMovieDelete,
 }) {
 
-   const location = useLocation();
-
    // Преобразование минут в *ч *м
    function getTimeFromMins(mins) {
       const hours = Math.trunc(mins / 60);
