@@ -14,13 +14,13 @@
    height: 20px;
    appearance: none;
    outline: none;
-   background: #2BE080;
+   background: #343434;
    border-radius: 10px;
 }
 
 
 .checkbox__input:checked {
-   background: #343434;
+   background: #2BE080;
 }
 
 .checkbox__input::before {
@@ -29,16 +29,15 @@
    width: 8px;
    height: 8px;
    border-radius: 50%;
-   right: 6px;
+   left: 6px;
    top: 6px;
-   background: #FFF;
+   background: #A0A0A0;
    transition: .4s;
 }
 
 .checkbox__input:checked::before {
-   left: 6px;
-   background: #A0A0A0;
-
+   left: 22px;
+   background: #FFF;
 }
 
 .checkbox__text {
